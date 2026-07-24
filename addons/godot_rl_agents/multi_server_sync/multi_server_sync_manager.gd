@@ -42,7 +42,7 @@ func _ready() -> void:
 
 	for sync_idx in sync_nodes_size:
 		if print_debug_info:
-			print("Creating MultiServerSync nodes: ")
+			print("Configuring MultiServerSync nodes: ")
 		var current_sync: MultiServerSync = sync_nodes[sync_idx]
 		var port: int = _get_cmd_arg_port() + sync_idx
 		current_sync.set_port(port)
