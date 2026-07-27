@@ -42,7 +42,7 @@ var _player: Node2D
 
 
 func _ready():
-	add_to_group(policy_name)
+	add_to_group("AGENT")
 
 
 func init(player: Node2D):

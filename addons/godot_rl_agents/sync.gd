@@ -1,7 +1,14 @@
 extends Node
 class_name Sync
 
-# --fixed-fps 2000 --disable-render-loop
+## Main Godot RL Agents script used for training, inference, and other modes.
+## For training, you need to start the Python training script first. 
+## ONNX inference of trained agents requires C# and can be used in-editor or 
+## with exported games (not all platforms are supported).
+## For more information, check the quickstart guide:
+## https://github.com/edbeeching/godot_rl_agents#quickstart-guide
+## as well as docs:
+## https://github.com/edbeeching/godot_rl_agents/tree/main/docs
 
 enum ControlModes {
 	HUMAN, ## Test the environment manually
@@ -18,12 +25,6 @@ enum ControlModes {
 ## Whether the inference will be deterministic (NOTE: Only applies to discrete actions in onnx inference mode)
 @export var deterministic_inference := true
 
-@export_group("Multi-server mode options")
-## Policy name of the AI-controllers that are assigned to this sync node
-@export var policy_name: String = "shared_policy"
-## When not empty then this value overrides the TCP port (only needed for 'Training' control mode)
-@export var tcp_port_override : String = ""
-
 # Onnx model stored for each requested path
 var onnx_models: Dictionary
 
@@ -32,7 +33,6 @@ var onnx_models: Dictionary
 const MAJOR_VERSION := "0"
 const MINOR_VERSION := "7"
 const DEFAULT_PORT := "11008"
-const DEFAULT_PORT_OFFSET := "0"
 const DEFAULT_SEED := "1"
 var stream: StreamPeerTCP = null
 var connected = false
@@ -367,8 +367,7 @@ func _set_agent_mode(agent: Node):
 
 
 func _get_agents():
-	all_agents = get_tree().get_nodes_in_group(policy_name)
-	assert (not all_agents.is_empty(), "No AI-controllers found. Check group name: " + policy_name)
+	all_agents = get_tree().get_nodes_in_group("AGENT")
 	for agent in all_agents:
 		_set_agent_mode(agent)
 
@@ -455,7 +454,7 @@ func connect_to_server():
 
 	# "localhost" was not working on windows VM, had to use the IP
 	var ip = "127.0.0.1"
-	var port = _get_port() + _get_port_offset()
+	var port = _get_port()
 	var connect = stream.connect_to_host(ip, port)
 	stream.set_no_delay(true)  # TODO check if this improves performance or not
 	stream.poll()
@@ -487,14 +486,7 @@ func _get_speedup():
 
 
 func _get_port():
-	if not tcp_port_override.is_empty():
-		return str(tcp_port_override).to_int()
-	else:
-		return args.get("port", DEFAULT_PORT).to_int()
-
-
-func _get_port_offset():
-	return args.get("port_offset", DEFAULT_PORT_OFFSET).to_int()
+	return args.get("port", DEFAULT_PORT).to_int()
 
 
 func _set_seed():
