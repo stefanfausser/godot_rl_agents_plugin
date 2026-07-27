@@ -18,6 +18,25 @@ func _ready() -> void:
 	return
 
 
+func _physics_process(_delta):
+	# two modes, human control, agent control
+	# pause tree, send obs, get actions, set actions, unpause tree
+
+	_demo_record_process()
+	
+	var current_action_repeat := 1 if not need_to_send_obs else action_repeat
+
+	if n_action_steps % current_action_repeat != 0:
+		n_action_steps += 1
+		return
+
+	n_action_steps += 1
+
+	_training_process()
+	_inference_process()
+	_heuristic_process()
+
+
 ## Call to initialize sync node manually
 func initialize() -> void:
 	assert(not initialized, "Sync node already initialized.")
